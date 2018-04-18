@@ -54,6 +54,7 @@ public class MapsActivity extends FragmentActivity implements
     public void onMapReady(GoogleMap googleMap) {
         final Activity thisActivity = this;
         mMap = googleMap;
+        // followed this guide https://developer.android.com/training/permissions/requesting.html
         if (ContextCompat.checkSelfPermission(thisActivity, Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
             // Permission is not granted
