@@ -1,11 +1,16 @@
 package com.example.mis.polygons;
 
+import android.Manifest;
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.content.pm.PackageManager;
 import android.nfc.Tag;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
+import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -47,8 +52,25 @@ public class MapsActivity extends FragmentActivity implements
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
+        final Activity thisActivity = this;
         mMap = googleMap;
-
+        if (ContextCompat.checkSelfPermission(thisActivity, Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
+            // Permission is not granted
+            // Should we show an explanation?
+            if (ActivityCompat.shouldShowRequestPermissionRationale(thisActivity,
+                    Manifest.permission.ACCESS_FINE_LOCATION)) {
+            } else {
+                int MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 42;
+                // No explanation needed; request the permission
+                ActivityCompat.requestPermissions(thisActivity,
+                        new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                        MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION
+                        );
+                //TODO: nothing is checking against MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION
+            }
+        }
+        mMap.setMyLocationEnabled(true);
         //inputText into string
         final TextView marketInputText = findViewById(R.id.inputText);
         String newString = marketInputText.toString();
@@ -72,21 +94,20 @@ public class MapsActivity extends FragmentActivity implements
                 TextView marketInputText = findViewById(R.id.inputText);
                 String newString = marketInputText.toString();
 
-                mMap.addMarker(new MarkerOptions()
+
+                Marker marker = mMap.addMarker(new MarkerOptions()
                         .position(point)
                         .snippet(newString));
+
             }
         });
-
 
         //on long click
         mMap.setOnMapLongClickListener(new GoogleMap.OnMapLongClickListener() {
             @Override
             public void onMapLongClick(LatLng point) {
-
             }
         });
-
     }
 
     @Override
@@ -96,9 +117,11 @@ public class MapsActivity extends FragmentActivity implements
 
     }
 
-
     @Override
     public boolean onMarkerClick(Marker marker) {
+        //show given markers snippet in a Toast as text
+        Toast.makeText(this, marker.getSnippet(),
+                Toast.LENGTH_SHORT).show();
         return false;
     }
 
