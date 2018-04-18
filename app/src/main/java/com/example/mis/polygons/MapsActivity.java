@@ -106,7 +106,7 @@ public class MapsActivity extends FragmentActivity implements
     public void onInfoWindowClick(Marker marker) {
         Toast.makeText(this, "info window is clicked",
                 Toast.LENGTH_SHORT).show();
-
+        //TODO: do some stuff here
     }
 
     @Override
