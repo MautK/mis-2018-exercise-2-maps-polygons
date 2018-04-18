@@ -75,15 +75,6 @@ public class MapsActivity extends FragmentActivity implements
         final TextView marketInputText = findViewById(R.id.inputText);
         String newString = marketInputText.toString();
 
-
-        // Add a marker in Sydney and move the camera
-        LatLng sydney = new LatLng(-34, 151);
-        mMap.addMarker(new MarkerOptions()
-                .position(sydney)
-                .title("Marker in Sydney")
-                .snippet(newString));
-
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
         //listen to click events
         mMap.setOnInfoWindowClickListener(this);
 
