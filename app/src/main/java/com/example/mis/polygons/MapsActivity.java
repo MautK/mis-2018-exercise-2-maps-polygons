@@ -4,6 +4,7 @@ import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.nfc.Tag;
 import android.support.v4.app.ActivityCompat;
@@ -30,8 +31,9 @@ import com.google.android.gms.maps.model.MarkerOptions;
 
 public class MapsActivity extends FragmentActivity implements
         OnMapReadyCallback,
-        GoogleMap.OnInfoWindowClickListener,
-        GoogleMap.OnMarkerClickListener {
+        GoogleMap.OnInfoWindowClickListener
+        //GoogleMap.OnMarkerClickListener
+        {
 
     //variables
     private GoogleMap mMap;
@@ -55,10 +57,12 @@ public class MapsActivity extends FragmentActivity implements
         final Activity thisActivity = this;
         mMap = googleMap;
         // followed this guide https://developer.android.com/training/permissions/requesting.html
+        //permission added to manifest
         if (ContextCompat.checkSelfPermission(thisActivity, Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
             // Permission is not granted
             // Should we show an explanation?
+            // - no think it's pretty clear that you want access to users location for a map-app
             if (ActivityCompat.shouldShowRequestPermissionRationale(thisActivity,
                     Manifest.permission.ACCESS_FINE_LOCATION)) {
             } else {
@@ -69,6 +73,7 @@ public class MapsActivity extends FragmentActivity implements
                         MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION
                         );
                 //TODO: nothing is checking against MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION
+                //add onRequestPermissionsResult as described in the documentation?
             }
         }
         mMap.setMyLocationEnabled(true);
@@ -100,6 +105,16 @@ public class MapsActivity extends FragmentActivity implements
             public void onMapLongClick(LatLng point) {
             }
         });
+
+        //on click on the marker
+        mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
+            @Override
+            public boolean onMarkerClick(Marker marker) {
+                //show info window
+                marker.showInfoWindow();
+                return false;
+            }
+        });
     }
 
     @Override
@@ -109,12 +124,14 @@ public class MapsActivity extends FragmentActivity implements
         //TODO: do some stuff here
     }
 
+    /** I think this part should be within the onMapReady just like the setOnMapLongClickListener
     @Override
     public boolean onMarkerClick(Marker marker) {
         //show given markers snippet in a Toast as text
-        Toast.makeText(this, marker.getSnippet(),
-                Toast.LENGTH_SHORT).show();
-        return false;
+
+        Toast.makeText(this, marker.getSnippet());
+        return true;
     }
+    */
 
 }
