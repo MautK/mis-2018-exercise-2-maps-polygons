@@ -1,0 +1,7 @@
+How to calculate the area of an arbitrary polygon, simply explained (scroll down)
+https://www.wikihow.com/Calculate-the-Area-of-a-Polygon
+&
+http://mathworld.wolfram.com/PolygonArea.html
+
+with code explanation here
+https://stackoverflow.com/questions/5416700/gps-area-in-android/16210785#16210785
