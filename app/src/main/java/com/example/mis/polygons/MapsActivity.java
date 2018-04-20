@@ -17,6 +17,7 @@ import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -29,19 +30,24 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import java.util.ArrayList;
+
 public class MapsActivity extends FragmentActivity implements
         OnMapReadyCallback,
         GoogleMap.OnInfoWindowClickListener,
-        GoogleMap.OnMarkerClickListener
-        {
+        GoogleMap.OnMarkerClickListener {
+
 
     //variables
     private GoogleMap mMap;
+    //TODO:make arraylist for markers that are added?
+    //for an array list
+    private ArrayList<Marker> mMarker;
+    private static final String TAG = "MapsActivity";
+
+
     private final int MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 42;
 
-    /**Customizing the info window and its contents as shown in this sample code
-     * https://github.com/googlemaps/android-samples/blob/master/ApiDemos/java/app/src/main/java/com/example/mapdemo/MarkerDemoActivity.java
-     */
 
     // added for future use - if another activity needs to know this value
     public int getMY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION() {
@@ -67,11 +73,8 @@ public class MapsActivity extends FragmentActivity implements
 
         mMap.setMyLocationEnabled(true);
 
-        //inputText into string
-        //TODO: do not know why we had this (textview and newstring) here if we ignore them
+
         //TODO: by creating new ones in onMapLongClick()
-        //final TextView marketInputText = findViewById(R.id.inputText);
-        //String newString = marketInputText.toString();
 
         //listen to click events on infoWindow
         mMap.setOnInfoWindowClickListener(this);
@@ -79,12 +82,15 @@ public class MapsActivity extends FragmentActivity implements
         //listen to click events on marker
         mMap.setOnMarkerClickListener(this);
 
+        //TODO: we are not using this one right?
         //create new marker where the map is clicked
         mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
-            @Override public void onMapClick(LatLng point) {
+            @Override
+            public void onMapClick(LatLng point) {
 
             }
         });
+
 
         //on long click
         mMap.setOnMapLongClickListener(new GoogleMap.OnMapLongClickListener() {
@@ -94,6 +100,8 @@ public class MapsActivity extends FragmentActivity implements
                 TextView marketInputText = findViewById(R.id.inputText);
                 String newString = marketInputText.getText().toString();
 
+                //TODO: Should we create this into an array so we can iterate it later for  the polygon action?
+                mMarker = new ArrayList<>();
                 mMap.addMarker(new MarkerOptions()
                         .position(point)
                         .title(newString));
@@ -102,13 +110,11 @@ public class MapsActivity extends FragmentActivity implements
     }
 
     //on click on the marker
-    /** I think this part should be within the onMapReady just like the setOnMapLongClickListener */
     @Override
     public boolean onMarkerClick(Marker marker) {
         //show given markers snippet in a Toast as text
-        //TODO: why false?
         marker.showInfoWindow();
-        return false;
+        return true;
     }
 
     public void checkPermission(Activity thisActivity) {
@@ -164,5 +170,11 @@ public class MapsActivity extends FragmentActivity implements
         marker.hideInfoWindow();
     }
 
-
+    //start the polygon action
+    public void buttonClick(View view) {
+        Log.d(TAG, "buttonClick: button is working");
+        for (int i = 0; i < mMarker.size(); i++) {
+            Log.d(TAG, "buttonClick: Marker " + mMarker.get(i).getTitle());
+        }
+    }
 }
