@@ -4,7 +4,9 @@ import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.nfc.Tag;
 import android.support.v4.app.ActivityCompat;
@@ -31,12 +33,13 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.logging.Logger;
 
 public class MapsActivity extends FragmentActivity implements
         OnMapReadyCallback,
         GoogleMap.OnInfoWindowClickListener,
         GoogleMap.OnMarkerClickListener {
-
 
     //variables
     private GoogleMap mMap;
@@ -44,8 +47,6 @@ public class MapsActivity extends FragmentActivity implements
     //for an array list
     private ArrayList<Marker> mMarker;
     private static final String TAG = "MapsActivity";
-
-
     private final int MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 42;
 
 
@@ -67,6 +68,9 @@ public class MapsActivity extends FragmentActivity implements
     @Override
     public void onMapReady(GoogleMap googleMap) {
         final Activity thisActivity = this;
+        SharedPreferences sharedPref = this.getPreferences(Context.MODE_PRIVATE);
+        SharedPreferences.Editor myEditor = sharedPref.edit();
+
         mMap = googleMap;
 
         checkPermission(thisActivity);
@@ -83,6 +87,7 @@ public class MapsActivity extends FragmentActivity implements
         mMap.setOnMarkerClickListener(this);
 
         //TODO: we are not using this one right?
+        //Answer: yepp, but maybe later - TODO: we'll delete it if we don't use it when we finished the app
         //create new marker where the map is clicked
         mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
             @Override
@@ -90,7 +95,6 @@ public class MapsActivity extends FragmentActivity implements
 
             }
         });
-
 
         //on long click
         mMap.setOnMapLongClickListener(new GoogleMap.OnMapLongClickListener() {
@@ -101,7 +105,13 @@ public class MapsActivity extends FragmentActivity implements
                 String newString = marketInputText.getText().toString();
 
                 //TODO: Should we create this into an array so we can iterate it later for  the polygon action?
-                mMarker = new ArrayList<>();
+                //Answer: good question - right now I haven't thought about the second part of the assignment.
+                //mMarker = new ArrayList<>();
+
+                Log.d(TAG, "onMapLongClick: " + point.toString());
+//                point.toString()
+//                myEditor.put
+//                myEditor.putInt("myPoint", (point));
                 mMap.addMarker(new MarkerOptions()
                         .position(point)
                         .title(newString));
@@ -112,7 +122,6 @@ public class MapsActivity extends FragmentActivity implements
     //on click on the marker
     @Override
     public boolean onMarkerClick(Marker marker) {
-        //show given markers snippet in a Toast as text
         marker.showInfoWindow();
         return true;
     }
