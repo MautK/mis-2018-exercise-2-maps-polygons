@@ -168,12 +168,13 @@ public class MapsActivity extends FragmentActivity implements
         Double secondALat;
         Double secondALng;
 
+
+
         if (polygonSwitch && activePolygonMarker.size() >= 3) {
             for (int i = 0; i < activePolygonMarker.size(); i++) {
                 if (i+1 < activePolygonMarker.size()) {
                     firstALat = activePolygonMarker.get(i).getPosition().latitude;
                     firstALng = activePolygonMarker.get(i).getPosition().longitude;
-
                     secondALat = activePolygonMarker.get(i + 1).getPosition().latitude;
                     secondALng = activePolygonMarker.get(i + 1).getPosition().longitude;
                 } else {
@@ -183,7 +184,7 @@ public class MapsActivity extends FragmentActivity implements
                     secondALat = activePolygonMarker.get(0).getPosition().latitude;
                     secondALng = activePolygonMarker.get(0).getPosition().longitude;
                 }
-                area += firstALat + secondALng - secondALat + firstALng;
+                area += firstALat * secondALng - secondALat * firstALng;
             }
             area = Math.abs(area / 2);
         } else {
