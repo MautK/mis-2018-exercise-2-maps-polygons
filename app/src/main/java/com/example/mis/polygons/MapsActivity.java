@@ -79,6 +79,8 @@ public class MapsActivity extends FragmentActivity implements
                     activePolygonMarker = new ArrayList<>();
                     polygonSwitch = !polygonSwitch;
                 } else {
+                    float foo = calcArea();
+                    Log.d(TAG, "onClick: " + foo);
                     createPolygon.setText("Start Polygon");
                     polygonSwitch = !polygonSwitch;
                 }
@@ -136,7 +138,9 @@ public class MapsActivity extends FragmentActivity implements
                         .position(point)
                         .title(newString));
 
-                activePolygonMarker.add(newMarker);
+                if (polygonSwitch) {
+                    activePolygonMarker.add(newMarker);
+                }
             }
         });
 
@@ -152,11 +156,40 @@ public class MapsActivity extends FragmentActivity implements
         myEditor.putString(markerId.toString(), titleLatLng);
         myEditor.commit();
     }
+
     private String getInputText(TextView v) {
         return v.getText().toString();
     }
+
     public float calcArea() {
-        return 0;
+        float area = 0;
+        Double firstALat;
+        Double firstALng;
+        Double secondALat;
+        Double secondALng;
+
+        if (polygonSwitch && activePolygonMarker.size() >= 3) {
+            for (int i = 0; i < activePolygonMarker.size(); i++) {
+                if (i+1 < activePolygonMarker.size()) {
+                    firstALat = activePolygonMarker.get(i).getPosition().latitude;
+                    firstALng = activePolygonMarker.get(i).getPosition().longitude;
+
+                    secondALat = activePolygonMarker.get(i + 1).getPosition().latitude;
+                    secondALng = activePolygonMarker.get(i + 1).getPosition().longitude;
+                } else {
+                    firstALat = activePolygonMarker.get(i).getPosition().latitude;
+                    firstALng = activePolygonMarker.get(i).getPosition().longitude;
+
+                    secondALat = activePolygonMarker.get(0).getPosition().latitude;
+                    secondALng = activePolygonMarker.get(0).getPosition().longitude;
+                }
+                area += firstALat + secondALng - secondALat + firstALng;
+            }
+            area = Math.abs(area / 2);
+        } else {
+            area = 0;
+        }
+        return area;
     }
 
     public float calcCentroid() {
@@ -224,10 +257,10 @@ public class MapsActivity extends FragmentActivity implements
     }
 
     //start the polygon action
-    public void buttonClick(View view) {
-        Log.d(TAG, "buttonClick: button is working");
-        for (int i = 0; i < activePolygonMarker.size(); i++) {
-            Log.d(TAG, "buttonClick: Marker " + activePolygonMarker.get(i).getTitle());
-        }
-    }
+//    public void buttonClick(View view) {
+//        Log.d(TAG, "buttonClick: button is working");
+//        for (int i = 0; i < activePolygonMarker.size(); i++) {
+//            Log.d(TAG, "buttonClick: Marker " + activePolygonMarker.get(i).getTitle());
+//        }
+//    }
 }
