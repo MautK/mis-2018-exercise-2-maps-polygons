@@ -29,11 +29,14 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.logging.Logger;
 
 public class MapsActivity extends FragmentActivity implements
@@ -45,10 +48,10 @@ public class MapsActivity extends FragmentActivity implements
     private GoogleMap mMap;
     //TODO:make arraylist for markers that are added?
     //for an array list
-    private ArrayList<Marker> mMarker;
+    private ArrayList<Marker> activePolygonMarker;
     private static final String TAG = "MapsActivity";
     private final int MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 42;
-
+    private boolean polygonSwitch = false;
 
     // added for future use - if another activity needs to know this value
     public int getMY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION() {
@@ -63,13 +66,15 @@ public class MapsActivity extends FragmentActivity implements
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+
+        SharedPreferences sharedPref = this.getPreferences(Context.MODE_PRIVATE);
     }
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
         final Activity thisActivity = this;
         SharedPreferences sharedPref = this.getPreferences(Context.MODE_PRIVATE);
-        SharedPreferences.Editor myEditor = sharedPref.edit();
+        final SharedPreferences.Editor myEditor = sharedPref.edit();
 
         mMap = googleMap;
 
@@ -106,17 +111,31 @@ public class MapsActivity extends FragmentActivity implements
 
                 //TODO: Should we create this into an array so we can iterate it later for  the polygon action?
                 //Answer: good question - right now I haven't thought about the second part of the assignment.
-                //mMarker = new ArrayList<>();
 
-                Log.d(TAG, "onMapLongClick: " + point.toString());
-//                point.toString()
-//                myEditor.put
-//                myEditor.putInt("myPoint", (point));
-                mMap.addMarker(new MarkerOptions()
+                Double aLat = point.latitude;
+                Double aLng = point.longitude;
+                String titleLatLng = newString + ", " + aLat.toString() + ", " + aLng.toString();
+                Integer markerId = titleLatLng.hashCode();
+
+                myEditor.putString(markerId.toString(), titleLatLng);
+                myEditor.commit();
+
+                Marker newMarker = mMap.addMarker(new MarkerOptions()
                         .position(point)
                         .title(newString));
+
+                activePolygonMarker = new ArrayList<>();
+                activePolygonMarker.add(newMarker);
             }
         });
+    }
+
+    public float calcArea() {
+        return 0;
+    }
+
+    public float calcCentroid() {
+        return 0;
     }
 
     //on click on the marker
@@ -182,8 +201,8 @@ public class MapsActivity extends FragmentActivity implements
     //start the polygon action
     public void buttonClick(View view) {
         Log.d(TAG, "buttonClick: button is working");
-        for (int i = 0; i < mMarker.size(); i++) {
-            Log.d(TAG, "buttonClick: Marker " + mMarker.get(i).getTitle());
+        for (int i = 0; i < activePolygonMarker.size(); i++) {
+            Log.d(TAG, "buttonClick: Marker " + activePolygonMarker.get(i).getTitle());
         }
     }
 }
