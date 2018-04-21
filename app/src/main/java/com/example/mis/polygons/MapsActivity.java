@@ -52,6 +52,7 @@ public class MapsActivity extends FragmentActivity implements
     private static final String TAG = "MapsActivity";
     private final int MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 42;
     private boolean polygonSwitch = false;
+    private SharedPreferences.Editor myEditor = null;
 
     // added for future use - if another activity needs to know this value
     public int getMY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION() {
@@ -62,10 +63,27 @@ public class MapsActivity extends FragmentActivity implements
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
+
+        final Button createPolygon = findViewById(R.id.button);
+
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+
+        createPolygon.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (polygonSwitch == false) {
+                    createPolygon.setText("End Polygon");
+                    activePolygonMarker = new ArrayList<>();
+                    polygonSwitch = !polygonSwitch;
+                } else {
+                    createPolygon.setText("Start Polygon");
+                    polygonSwitch = !polygonSwitch;
+                }
+            }
+        });
 
         SharedPreferences sharedPref = this.getPreferences(Context.MODE_PRIVATE);
     }
@@ -74,7 +92,7 @@ public class MapsActivity extends FragmentActivity implements
     public void onMapReady(GoogleMap googleMap) {
         final Activity thisActivity = this;
         SharedPreferences sharedPref = this.getPreferences(Context.MODE_PRIVATE);
-        final SharedPreferences.Editor myEditor = sharedPref.edit();
+        myEditor = sharedPref.edit();
 
         mMap = googleMap;
 
@@ -106,30 +124,37 @@ public class MapsActivity extends FragmentActivity implements
             @Override
             public void onMapLongClick(LatLng point) {
                 //inputText into string
-                TextView marketInputText = findViewById(R.id.inputText);
-                String newString = marketInputText.getText().toString();
+                TextView markerInputText = findViewById(R.id.inputText);
+                String newString = getInputText(markerInputText);
 
                 //TODO: Should we create this into an array so we can iterate it later for  the polygon action?
                 //Answer: good question - right now I haven't thought about the second part of the assignment.
 
-                Double aLat = point.latitude;
-                Double aLng = point.longitude;
-                String titleLatLng = newString + ", " + aLat.toString() + ", " + aLng.toString();
-                Integer markerId = titleLatLng.hashCode();
-
-                myEditor.putString(markerId.toString(), titleLatLng);
-                myEditor.commit();
+                savePoint(point, newString);
 
                 Marker newMarker = mMap.addMarker(new MarkerOptions()
                         .position(point)
                         .title(newString));
 
-                activePolygonMarker = new ArrayList<>();
                 activePolygonMarker.add(newMarker);
             }
         });
+
+
     }
 
+    private void savePoint(LatLng p, String title) {
+        Double aLat = p.latitude;
+        Double aLng = p.longitude;
+        String titleLatLng = title + ", " + aLat.toString() + ", " + aLng.toString();
+        Integer markerId = titleLatLng.hashCode();
+
+        myEditor.putString(markerId.toString(), titleLatLng);
+        myEditor.commit();
+    }
+    private String getInputText(TextView v) {
+        return v.getText().toString();
+    }
     public float calcArea() {
         return 0;
     }
