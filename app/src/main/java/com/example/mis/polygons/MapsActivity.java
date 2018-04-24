@@ -14,7 +14,9 @@ import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
+import android.text.Html;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -32,7 +34,15 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.Polygon;
+import com.google.android.gms.maps.model.PolygonOptions;
+import com.google.android.gms.maps.model.Polyline;
+import com.google.android.gms.maps.model.PolylineOptions;
+import com.google.maps.android.SphericalUtil;
 
+import java.math.RoundingMode;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Map;
@@ -44,15 +54,13 @@ public class MapsActivity extends FragmentActivity implements
         GoogleMap.OnInfoWindowClickListener,
         GoogleMap.OnMarkerClickListener {
 
-    //variables
     private GoogleMap mMap;
-    //TODO:make arraylist for markers that are added?
-    //for an array list
     private ArrayList<Marker> activePolygonMarker;
     private static final String TAG = "MapsActivity";
     private final int MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 42;
     private boolean polygonSwitch = false;
     private SharedPreferences.Editor myEditor = null;
+    private SharedPreferences sharedPref;
 
     // added for future use - if another activity needs to know this value
     public int getMY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION() {
@@ -79,21 +87,21 @@ public class MapsActivity extends FragmentActivity implements
                     activePolygonMarker = new ArrayList<>();
                     polygonSwitch = !polygonSwitch;
                 } else {
-                    float foo = calcArea();
-                    Log.d(TAG, "onClick: " + foo);
+//                    double area = calcArea();
+//                    Log.d(TAG, "onClick: " + foo);
                     createPolygon.setText("Start Polygon");
+                    calcCentroid();
                     polygonSwitch = !polygonSwitch;
                 }
             }
         });
-
-        SharedPreferences sharedPref = this.getPreferences(Context.MODE_PRIVATE);
+        sharedPref = this.getPreferences(Context.MODE_PRIVATE);
     }
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
         final Activity thisActivity = this;
-        SharedPreferences sharedPref = this.getPreferences(Context.MODE_PRIVATE);
+        sharedPref = this.getPreferences(Context.MODE_PRIVATE);
         myEditor = sharedPref.edit();
 
         mMap = googleMap;
@@ -130,7 +138,7 @@ public class MapsActivity extends FragmentActivity implements
                 String newString = getInputText(markerInputText);
 
                 //TODO: Should we create this into an array so we can iterate it later for  the polygon action?
-                //Answer: good question - right now I haven't thought about the second part of the assignment.
+                //Answer: created arrayList of type Marker -> activePolygonMarker
 
                 savePoint(point, newString);
 
@@ -161,40 +169,62 @@ public class MapsActivity extends FragmentActivity implements
         return v.getText().toString();
     }
 
-    public float calcArea() {
-        float area = 0;
-        Double firstALat;
-        Double firstALng;
-        Double secondALat;
-        Double secondALng;
+    public double calcArea() {
+        Polygon newPolygon;
+        PolygonOptions newPolygonOptions = new PolygonOptions();
 
-
+        double area;
 
         if (polygonSwitch && activePolygonMarker.size() >= 3) {
             for (int i = 0; i < activePolygonMarker.size(); i++) {
-                if (i+1 < activePolygonMarker.size()) {
-                    firstALat = activePolygonMarker.get(i).getPosition().latitude;
-                    firstALng = activePolygonMarker.get(i).getPosition().longitude;
-                    secondALat = activePolygonMarker.get(i + 1).getPosition().latitude;
-                    secondALng = activePolygonMarker.get(i + 1).getPosition().longitude;
-                } else {
-                    firstALat = activePolygonMarker.get(i).getPosition().latitude;
-                    firstALng = activePolygonMarker.get(i).getPosition().longitude;
-
-                    secondALat = activePolygonMarker.get(0).getPosition().latitude;
-                    secondALng = activePolygonMarker.get(0).getPosition().longitude;
-                }
-                area += firstALat * secondALng - secondALat * firstALng;
+//                if (i+1 < activePolygonMarker.size()) {
+                newPolygonOptions.add(activePolygonMarker.get(i).getPosition());
             }
-            area = Math.abs(area / 2);
+            newPolygon = mMap.addPolygon(newPolygonOptions);
+            area = SphericalUtil.computeArea(newPolygon.getPoints());
         } else {
             area = 0;
         }
         return area;
     }
 
-    public float calcCentroid() {
-        return 0;
+    public String addUnitToArea(Double area) {
+        String areaWithUnit;
+        if (area >= 1000000) {
+            area = area/1000000;
+//            DecimalFormat addSquareKilometers = new DecimalFormat("#.000");
+//            addSquareKilometers.setRoundingMode(RoundingMode.CEILING);
+            areaWithUnit = Double.toString(area)+//addSquareKilometers.format(area) +
+                    Html.fromHtml("km\u00B2");
+        } else {
+            DecimalFormat addSquareMeters = new DecimalFormat("#.00");
+//            addSquareMeters.setRoundingMode(RoundingMode.CEILING);
+            areaWithUnit = addSquareMeters.format(area) +
+                    Html.fromHtml("m\u00B2");
+        }
+        return areaWithUnit;
+    }
+    public void calcCentroid() {
+        LatLng centroid;
+        double centroidLat = 0;
+        double centroidLng = 0;
+        if (polygonSwitch && activePolygonMarker.size() >= 3) {
+            for (int i = 0; i < activePolygonMarker.size(); i++) {
+                centroidLat += activePolygonMarker.get(i).getPosition().latitude;
+                centroidLng += activePolygonMarker.get(i).getPosition().longitude;
+            }
+
+            //TODO: test this approach
+            // https://sciencing.com/convert-xy-coordinates-longitude-latitude-8449009.html
+            centroidLat = centroidLat / activePolygonMarker.size();
+            centroidLng = centroidLng / activePolygonMarker.size();
+            centroid = new LatLng(centroidLat, centroidLng);
+            String centroidTitle = addUnitToArea(calcArea());
+            mMap.addMarker(new MarkerOptions()
+                    .position(centroid)
+                    .title(centroidTitle));
+            mMap.moveCamera(CameraUpdateFactory.newLatLng(centroid));
+        }
     }
 
     //on click on the marker
