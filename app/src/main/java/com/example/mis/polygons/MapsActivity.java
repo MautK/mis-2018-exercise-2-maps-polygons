@@ -114,8 +114,6 @@ public class MapsActivity extends FragmentActivity implements
         mMap.setMyLocationEnabled(true);
 
 
-        //TODO: by creating new ones in onMapLongClick()
-
         //listen to click events on infoWindow
         mMap.setOnInfoWindowClickListener(this);
 
@@ -196,6 +194,9 @@ public class MapsActivity extends FragmentActivity implements
             }
             newPolygon = mMap.addPolygon(newPolygonOptions);
             area = SphericalUtil.computeArea(newPolygon.getPoints());
+
+            newPolygon.setFillColor(0x8881C784);
+
         } else {
             area = 0;
         }
@@ -237,7 +238,6 @@ public class MapsActivity extends FragmentActivity implements
             mMap.addMarker(new MarkerOptions()
                     .position(centroid)
                     .title(centroidTitle));
-            mMap.moveCamera(CameraUpdateFactory.newLatLng(centroid));
         }
     }
 
@@ -312,12 +312,4 @@ public class MapsActivity extends FragmentActivity implements
         //TODO: do some stuff here
         marker.hideInfoWindow();
     }
-
-    //start the polygon action
-//    public void buttonClick(View view) {
-//        Log.d(TAG, "buttonClick: button is working");
-//        for (int i = 0; i < activePolygonMarker.size(); i++) {
-//            Log.d(TAG, "buttonClick: Marker " + activePolygonMarker.get(i).getTitle());
-//        }
-//    }
 }
