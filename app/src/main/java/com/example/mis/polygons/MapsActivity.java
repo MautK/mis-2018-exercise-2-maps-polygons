@@ -26,6 +26,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.common.util.CrashUtils;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -45,6 +46,7 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
@@ -96,6 +98,7 @@ public class MapsActivity extends FragmentActivity implements
             }
         });
         sharedPref = this.getPreferences(Context.MODE_PRIVATE);
+        loadMarkers();
     }
 
     @Override
@@ -140,7 +143,7 @@ public class MapsActivity extends FragmentActivity implements
                 //TODO: Should we create this into an array so we can iterate it later for  the polygon action?
                 //Answer: created arrayList of type Marker -> activePolygonMarker
 
-                savePoint(point, newString);
+                saveMarker(point, newString);
 
                 Marker newMarker = mMap.addMarker(new MarkerOptions()
                         .position(point)
@@ -149,13 +152,15 @@ public class MapsActivity extends FragmentActivity implements
                 if (polygonSwitch) {
                     activePolygonMarker.add(newMarker);
                 }
+    //                myEditor.clear();
+    //                myEditor.commit();
             }
         });
 
 
     }
 
-    private void savePoint(LatLng p, String title) {
+    private void saveMarker(LatLng p, String title) {
         Double aLat = p.latitude;
         Double aLng = p.longitude;
         String titleLatLng = title + ", " + aLat.toString() + ", " + aLng.toString();
@@ -163,6 +168,15 @@ public class MapsActivity extends FragmentActivity implements
 
         myEditor.putString(markerId.toString(), titleLatLng);
         myEditor.commit();
+    }
+
+    private void loadMarkers() {
+        Map<String, ?> allMarker = sharedPref.getAll();
+
+        for (Map.Entry<String, ?> entry : allMarker.entrySet()) {
+            Log.d(TAG, "loadMarkers: " + entry.getKey() + ": " +
+                    entry.getValue().toString());
+        }
     }
 
     private String getInputText(TextView v) {
