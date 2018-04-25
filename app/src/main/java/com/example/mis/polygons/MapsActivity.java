@@ -17,6 +17,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 //import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.common.server.converter.StringToIntConverter;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
@@ -25,6 +26,7 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polygon;
 import com.google.android.gms.maps.model.PolygonOptions;
+import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.maps.android.SphericalUtil;
 
 import java.math.RoundingMode;
@@ -56,11 +58,20 @@ public class MapsActivity extends FragmentActivity implements
         setContentView(R.layout.activity_maps);
 
         final Button createPolygon = findViewById(R.id.buttonPolygon);
+        final Button deletePolygon = findViewById(R.id.buttonDelete);
 
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+
+        deletePolygon.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                myEditor.clear();
+                myEditor.commit();
+            }
+        });
 
         createPolygon.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -79,7 +90,6 @@ public class MapsActivity extends FragmentActivity implements
             }
         });
         sharedPref = this.getPreferences(Context.MODE_PRIVATE);
-        loadMarkers();
     }
 
     @Override
@@ -131,12 +141,9 @@ public class MapsActivity extends FragmentActivity implements
                 if (polygonSwitch) {
                     activePolygonMarker.add(newMarker);
                 }
-    //                myEditor.clear();
-    //                myEditor.commit();
             }
         });
-
-
+        loadMarkers();
     }
 
     private void saveMarker(LatLng p, String title) {
@@ -153,9 +160,18 @@ public class MapsActivity extends FragmentActivity implements
         Map<String, ?> allMarker = sharedPref.getAll();
 
         for (Map.Entry<String, ?> entry : allMarker.entrySet()) {
-            Log.d(TAG, "loadMarkers: " + entry.getKey() + ": " +
-                    entry.getValue().toString());
-            Log.d(TAG, "loadMarkers: " + entry.getValue());
+            String[] foobar = entry.getValue().toString().split(", ");
+            String title = foobar[0];
+            Double lat = Double.parseDouble(foobar[1]);
+            Double lng = Double.parseDouble(foobar[2]);
+
+            mMap.addMarker(new MarkerOptions()
+                    .position(new LatLng(lat, lng))
+                    .title(title)
+            );
+            Log.d(TAG, "title: " + foobar[0]);
+            Log.d(TAG, "lat: " + foobar[1]);
+            Log.d(TAG, "lng: " + foobar[2]);
         }
     }
 
@@ -163,12 +179,15 @@ public class MapsActivity extends FragmentActivity implements
         return v.getText().toString();
     }
 
+
     public double calcArea() {
         Polygon newPolygon;
         PolygonOptions newPolygonOptions = new PolygonOptions();
 
         double area;
 
+        // used method computeArea() from SphericalUtil to get the area enclosed by markers in m^2
+        // http://googlemaps.github.io/android-maps-utils/javadoc/com/google/maps/android/SphericalUtil.html
         if (polygonSwitch && activePolygonMarker.size() >= 3) {
             for (int i = 0; i < activePolygonMarker.size(); i++) {
 //                if (i+1 < activePolygonMarker.size()) {
@@ -289,9 +308,6 @@ public class MapsActivity extends FragmentActivity implements
 
     @Override
     public void onInfoWindowClick(Marker marker) {
-        Toast.makeText(this, "info window is clicked and closed",
-                Toast.LENGTH_SHORT).show();
-        //TODO: do some stuff here
         marker.hideInfoWindow();
     }
 }
