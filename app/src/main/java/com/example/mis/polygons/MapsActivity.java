@@ -105,14 +105,33 @@ public class MapsActivity extends FragmentActivity implements
                 mMap.addMarker(new MarkerOptions()
                         .position(point)
                         .title(newString));
+
+                //store the object to the sharedPreferences File
+                saveObjectToSharedPreferences();
+                //retrieve object (but this should probably be placed somewhere else)
+                ...
+
             }
         });
     }
 
+    public static void saveObjectToSharedPreferences() {
+        //here the code that sets up the sharedPreferences File
+
+        //adding a string to the sharedPreferences
+        //apply changes to sharedPreferences
+    }
+
+    public static void getSavedObjectFromPreferences() {
+        //retrieve the data from the sharedPreferences File
+    }
+
+
     //on click on the marker
     @Override
     public boolean onMarkerClick(Marker marker) {
-        //show given markers snippet in a Toast as text
+        //
+
         marker.showInfoWindow();
         return true;
     }
