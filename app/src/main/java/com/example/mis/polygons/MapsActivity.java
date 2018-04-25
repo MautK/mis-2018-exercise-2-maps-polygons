@@ -190,15 +190,15 @@ public class MapsActivity extends FragmentActivity implements
 
     public String addUnitToArea(Double area) {
         String areaWithUnit;
-        if (area >= 1000000) {
+        if (area >= 100000) {
             area = area/1000000;
-//            DecimalFormat addSquareKilometers = new DecimalFormat("#.000");
-//            addSquareKilometers.setRoundingMode(RoundingMode.CEILING);
-            areaWithUnit = Double.toString(area)+//addSquareKilometers.format(area) +
+            DecimalFormat addSquareKilometers = new DecimalFormat("0.000");
+            addSquareKilometers.setRoundingMode(RoundingMode.CEILING);
+            areaWithUnit = addSquareKilometers.format(area) +
                     Html.fromHtml("km\u00B2");
         } else {
-            DecimalFormat addSquareMeters = new DecimalFormat("#.00");
-//            addSquareMeters.setRoundingMode(RoundingMode.CEILING);
+            DecimalFormat addSquareMeters = new DecimalFormat("0.00");
+            addSquareMeters.setRoundingMode(RoundingMode.CEILING);
             areaWithUnit = addSquareMeters.format(area) +
                     Html.fromHtml("m\u00B2");
         }
