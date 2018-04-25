@@ -241,6 +241,18 @@ public class MapsActivity extends FragmentActivity implements
         }
     }
 
+    public static void saveObjectToSharedPreferences() {
+        //here the code that sets up the sharedPreferences File
+
+        //adding a string to the sharedPreferences
+        //apply changes to sharedPreferences
+    }
+
+    public static void getSavedObjectFromPreferences() {
+        //retrieve the data from the sharedPreferences File
+    }
+
+
     //on click on the marker
     @Override
     public boolean onMarkerClick(Marker marker) {
