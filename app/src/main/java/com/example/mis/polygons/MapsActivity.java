@@ -38,10 +38,8 @@ public class MapsActivity extends FragmentActivity implements
         OnMapReadyCallback,
         GoogleMap.OnInfoWindowClickListener,
         GoogleMap.OnMarkerClickListener {
-
     private GoogleMap mMap;
     private ArrayList<Marker> activePolygonMarker;
-    private static final String TAG = "MapsActivity";
     private final int MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 42;
     private boolean polygonSwitch = false;
     private SharedPreferences.Editor myEditor = null;
@@ -54,6 +52,9 @@ public class MapsActivity extends FragmentActivity implements
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        final Activity thisActivity = this;
+        checkPermission(thisActivity);
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
 
@@ -81,8 +82,6 @@ public class MapsActivity extends FragmentActivity implements
                     activePolygonMarker = new ArrayList<>();
                     polygonSwitch = !polygonSwitch;
                 } else {
-//                    double area = calcArea();
-//                    Log.d(TAG, "onClick: " + foo);
                     createPolygon.setText("Start Polygon");
                     calcCentroid();
                     polygonSwitch = !polygonSwitch;
@@ -95,15 +94,11 @@ public class MapsActivity extends FragmentActivity implements
     @Override
     public void onMapReady(GoogleMap googleMap) {
         final Activity thisActivity = this;
+        checkPermission(thisActivity);
         sharedPref = this.getPreferences(Context.MODE_PRIVATE);
         myEditor = sharedPref.edit();
-
         mMap = googleMap;
-
-        checkPermission(thisActivity);
-
         mMap.setMyLocationEnabled(true);
-
 
         //listen to click events on infoWindow
         mMap.setOnInfoWindowClickListener(this);
@@ -158,7 +153,6 @@ public class MapsActivity extends FragmentActivity implements
 
     private void loadMarkers() {
         Map<String, ?> allMarker = sharedPref.getAll();
-
         for (Map.Entry<String, ?> entry : allMarker.entrySet()) {
             String[] foobar = entry.getValue().toString().split(", ");
             String title = foobar[0];
@@ -169,9 +163,6 @@ public class MapsActivity extends FragmentActivity implements
                     .position(new LatLng(lat, lng))
                     .title(title)
             );
-            Log.d(TAG, "title: " + foobar[0]);
-            Log.d(TAG, "lat: " + foobar[1]);
-            Log.d(TAG, "lng: " + foobar[2]);
         }
     }
 
@@ -183,21 +174,17 @@ public class MapsActivity extends FragmentActivity implements
     public double calcArea() {
         Polygon newPolygon;
         PolygonOptions newPolygonOptions = new PolygonOptions();
-
         double area;
 
         // used method computeArea() from SphericalUtil to get the area enclosed by markers in m^2
         // http://googlemaps.github.io/android-maps-utils/javadoc/com/google/maps/android/SphericalUtil.html
         if (polygonSwitch && activePolygonMarker.size() >= 3) {
             for (int i = 0; i < activePolygonMarker.size(); i++) {
-//                if (i+1 < activePolygonMarker.size()) {
                 newPolygonOptions.add(activePolygonMarker.get(i).getPosition());
             }
             newPolygon = mMap.addPolygon(newPolygonOptions);
             area = SphericalUtil.computeArea(newPolygon.getPoints());
-
             newPolygon.setFillColor(0x8881C784);
-
         } else {
             area = 0;
         }
@@ -229,7 +216,6 @@ public class MapsActivity extends FragmentActivity implements
                 centroidLat += activePolygonMarker.get(i).getPosition().latitude;
                 centroidLng += activePolygonMarker.get(i).getPosition().longitude;
             }
-
             //TODO: test this approach
             // https://sciencing.com/convert-xy-coordinates-longitude-latitude-8449009.html
             centroidLat = centroidLat / activePolygonMarker.size();
