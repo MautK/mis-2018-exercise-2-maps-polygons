@@ -16,7 +16,7 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.gms.maps.CameraUpdateFactory;
+//import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
@@ -155,6 +155,7 @@ public class MapsActivity extends FragmentActivity implements
         for (Map.Entry<String, ?> entry : allMarker.entrySet()) {
             Log.d(TAG, "loadMarkers: " + entry.getKey() + ": " +
                     entry.getValue().toString());
+            Log.d(TAG, "loadMarkers: " + entry.getValue());
         }
     }
 
@@ -173,7 +174,7 @@ public class MapsActivity extends FragmentActivity implements
 //                if (i+1 < activePolygonMarker.size()) {
                 newPolygonOptions.add(activePolygonMarker.get(i).getPosition());
             }
-            newPolygon = mMap.addPolygon(newPolygonOptions).;
+            newPolygon = mMap.addPolygon(newPolygonOptions);
             area = SphericalUtil.computeArea(newPolygon.getPoints());
 
             newPolygon.setFillColor(0x8881C784);
