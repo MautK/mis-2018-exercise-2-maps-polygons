@@ -129,10 +129,9 @@ public class MapsActivity extends FragmentActivity implements
                 TextView markerInputText = findViewById(R.id.inputText);
                 String newString = getInputText(markerInputText);
 
-                //TODO: Should we create this into an array so we can iterate it later for  the polygon action?
-                //Answer: created arrayList of type Marker -> activePolygonMarker
 
                 saveMarker(point, newString);
+                savePolygon();
 
                 Marker newMarker = mMap.addMarker(new MarkerOptions()
                         .position(point)
@@ -144,6 +143,17 @@ public class MapsActivity extends FragmentActivity implements
             }
         });
         loadMarkers();
+        loadPolygon();
+    }
+
+    private void savePolygon() {
+        String polyString = "";
+        if (activePolygonMarker.size() > 0) {
+            Log.d(TAG, "savePolygon: " + activePolygonMarker);
+            Marker polyString = activePolygonMarker.get(0);
+
+            //for-loop over all the active polygonmarkers
+        }
     }
 
     private void saveMarker(LatLng p, String title) {
@@ -154,6 +164,20 @@ public class MapsActivity extends FragmentActivity implements
 
         myEditor.putString(markerId.toString(), titleLatLng);
         myEditor.commit();
+    }
+
+
+
+    private void loadPolygon() {
+        //call the saved polygon data
+        //change it back from string into Double numbers
+        //recreate marker
+
+        //getAll
+        //for loop
+        //if statement with number of splits
+
+
     }
 
     private void loadMarkers() {
