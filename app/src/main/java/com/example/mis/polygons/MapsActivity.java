@@ -181,28 +181,33 @@ public class MapsActivity extends FragmentActivity implements
         Map<String, ?> allMarker = sharedPref.getAll();
         for (Map.Entry<String, ?> entry : allMarker.entrySet()) {
             String[] foobar = entry.getValue().toString().split(", ");
-            String title = foobar[0];
-            Double lat = Double.parseDouble(foobar[1]);
-            Double lng = Double.parseDouble(foobar[2]);
+            if (foobar.length == 2 || foobar.length == 3) {
+                String title = foobar[0];
+                Double lat = Double.parseDouble(foobar[1]);
+                Double lng = Double.parseDouble(foobar[2]);
 
-            mMap.addMarker(new MarkerOptions()
-                    .position(new LatLng(lat, lng))
-                    .title(title)
-            );
+                mMap.addMarker(new MarkerOptions()
+                        .position(new LatLng(lat, lng))
+                        .title(title)
+                );
+            }
         }
 
         Map<String, ?> polyMarker = sharedPref.getAll();
         for (Map.Entry<String, ?> entry : polyMarker.entrySet()) {
-            //change it back from double into integrer
+            //change it back from double into integer
             String[] foobar = entry.getValue().toString().split(", ");
-            Double pLat = Double.parseDouble(foobar[0]);
-            Double pLng = Double.parseDouble(foobar[1]);
+            String title = foobar[0];
+            Double pLat = Double.parseDouble(foobar[1]);
+            Double pLng = Double.parseDouble(foobar[2]);
 
             //recreate marker
             Marker newMarker = mMap.addMarker(new MarkerOptions()
-                    .position(new LatLng(pLat, pLng)));
+                    .position(new LatLng(pLat, pLng))
+                    .title(title)
+            );
 
-            activePolygonMarker.add(newMarker);
+//            activePolygonMarker.add(newMarker);
         }
     }
 
