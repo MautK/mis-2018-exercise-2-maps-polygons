@@ -40,7 +40,7 @@ public class MapsActivity extends FragmentActivity implements
         GoogleMap.OnMarkerClickListener {
     private static final String TAG = "onCreate";
     private GoogleMap mMap;
-    private ArrayList<Marker> activePolygonMarker;
+    private ArrayList<Marker> activePolygonMarker = new ArrayList<>();
     private final int MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 42;
     private boolean polygonSwitch = false;
     private SharedPreferences.Editor myEditor = null;
@@ -77,7 +77,10 @@ public class MapsActivity extends FragmentActivity implements
                     polygonSwitch = !polygonSwitch;
                 } else {
                     createPolygon.setText("Start Polygon");
-                    calcCentroid();
+                    calcCentroid(activePolygonMarker);
+                    if (activePolygonMarker.size() >= 3) {
+                        savePolygon(arrayToString());
+                    }
                     polygonSwitch = !polygonSwitch;
                 }
             }
@@ -116,17 +119,14 @@ public class MapsActivity extends FragmentActivity implements
                 //inputText into string
                 TextView markerInputText = findViewById(R.id.inputText);
                 String newString = getInputText(markerInputText);
+
                 Marker newMarker = mMap.addMarker(new MarkerOptions()
                         .position(point)
                         .title(newString));
 
-                //String foo = '';
                 if (polygonSwitch) {
                     activePolygonMarker.add(newMarker);
-                    //arrayToString();
-                    //foo = foo + savePolygon(point, newString);
                 } else {
-                    savePolygon(arrayToString());
                     saveMarker(point, newString);
                 }
             }
@@ -137,7 +137,7 @@ public class MapsActivity extends FragmentActivity implements
 
     private String arrayToString() {
         String polyString = "";
-        if (activePolygonMarker.size() != 0) {
+        if (activePolygonMarker != null) {
             for (int i = 0; i < activePolygonMarker.size(); i++) {
                 Double aLat = activePolygonMarker.get(i).getPosition().latitude;
                 Double aLng = activePolygonMarker.get(i).getPosition().longitude;
@@ -157,6 +157,7 @@ public class MapsActivity extends FragmentActivity implements
         Integer polygonStringId = polygonString.hashCode();
         myEditor.putString(polygonStringId.toString(), polygonString);
         myEditor.apply();
+        Toast.makeText(this, "YAY - savePolygon", Toast.LENGTH_SHORT).show();
     }
 
 
@@ -193,27 +194,26 @@ public class MapsActivity extends FragmentActivity implements
                         .position(new LatLng(lat, lng))
                         .title(title)
                 );
-            }
+            } else {
+                ArrayList<Marker> markerArray = new ArrayList<>();
+                for (int i = 0; i < foobar.length; i = i+3) {
+                    String title = foobar[i+0];
+                    Double pLat = Double.parseDouble(foobar[i+1]);
+                    Double pLng = Double.parseDouble(foobar[i+2]);
 
-            else {
-                Log.d(TAG, "loadMarkers: polygon");
-                String title = foobar[0];
-                Double pLat = Double.parseDouble(foobar[1]);
-                Double pLng = Double.parseDouble(foobar[2]);
-
-                //recreate marker
-                Marker polygonMarker = mMap.addMarker(new MarkerOptions()
-                        .position(new LatLng(pLat, pLng))
-                        .title(title)
-                );
-
-                activePolygonMarker.add(polygonMarker);
-
+                    Log.d(TAG, "loadMarkers latitude: " + pLat.toString());
+                    //recreate marker
+                    Marker newMarker = mMap.addMarker(new MarkerOptions()
+                            .position(new LatLng(pLat, pLng))
+                            .title(title)
+                    );
+                    markerArray.add(newMarker);
                 }
-
-
+                calcCentroid(markerArray);
+                Toast.makeText(this, "YAY YAY?", Toast.LENGTH_SHORT).show();
             }
         }
+    }
 
 
     private String getInputText(TextView v) {
@@ -221,16 +221,18 @@ public class MapsActivity extends FragmentActivity implements
     }
 
 
-    public double calcArea() {
+    public double calcArea(ArrayList<Marker> markerArray) {
         Polygon newPolygon;
         PolygonOptions newPolygonOptions = new PolygonOptions();
         double area;
 
+
         // used method computeArea() from SphericalUtil to get the area enclosed by markers in m^2
         // http://googlemaps.github.io/android-maps-utils/javadoc/com/google/maps/android/SphericalUtil.html
-        if (polygonSwitch && activePolygonMarker.size() >= 3) {
-            for (int i = 0; i < activePolygonMarker.size(); i++) {
-                newPolygonOptions.add(activePolygonMarker.get(i).getPosition());
+        if (markerArray.size() >= 3) {
+            for (int i = 0; i < markerArray.size(); i++) {
+                newPolygonOptions.add(markerArray.get(i).getPosition());
+//                Toast.makeText(this, "ALMOST", Toast.LENGTH_SHORT).show();
             }
             newPolygon = mMap.addPolygon(newPolygonOptions);
             area = SphericalUtil.computeArea(newPolygon.getPoints());
@@ -257,21 +259,24 @@ public class MapsActivity extends FragmentActivity implements
         }
         return areaWithUnit;
     }
-    public void calcCentroid() {
+    public void calcCentroid(ArrayList<Marker> markerArray) {
+        Integer foobarbar = markerArray.size();
         LatLng centroid;
         double centroidLat = 0;
         double centroidLng = 0;
-        if (polygonSwitch && activePolygonMarker.size() >= 3) {
-            for (int i = 0; i < activePolygonMarker.size(); i++) {
-                centroidLat += activePolygonMarker.get(i).getPosition().latitude;
-                centroidLng += activePolygonMarker.get(i).getPosition().longitude;
+        if (markerArray.size() >= 3) {
+            for (int i = 0; i < markerArray.size(); i++) {
+                centroidLat += markerArray.get(i).getPosition().latitude;
+                centroidLng += markerArray.get(i).getPosition().longitude;
             }
+            Toast.makeText(this, "wurst" + foobarbar.toString(), Toast.LENGTH_SHORT).show();
+
             //TODO: test this approach
             // https://sciencing.com/convert-xy-coordinates-longitude-latitude-8449009.html
-            centroidLat = centroidLat / activePolygonMarker.size();
-            centroidLng = centroidLng / activePolygonMarker.size();
+            centroidLat = centroidLat / markerArray.size();
+            centroidLng = centroidLng / markerArray.size();
             centroid = new LatLng(centroidLat, centroidLng);
-            String centroidTitle = addUnitToArea(calcArea());
+            String centroidTitle = addUnitToArea(calcArea(markerArray));
             mMap.addMarker(new MarkerOptions()
                     .position(centroid)
                     .title(centroidTitle));
