@@ -51,23 +51,18 @@ public class MapsActivity extends FragmentActivity implements
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
 
-        final Button createPolygon = findViewById(R.id.buttonPolygon);
-        final Button deletePolygon = findViewById(R.id.buttonDelete);
 
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+        sharedPref = this.getPreferences(Context.MODE_PRIVATE);
 
-        deletePolygon.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                myEditor.clear();
-                myEditor.commit();
-                mMap.clear();
-            }
-        });
 
+        final Button createPolygon = findViewById(R.id.buttonPolygon);
+        final Button deletePolygon = findViewById(R.id.buttonDelete);
+
+        //create&end polygon button
         createPolygon.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -85,7 +80,16 @@ public class MapsActivity extends FragmentActivity implements
                 }
             }
         });
-        sharedPref = this.getPreferences(Context.MODE_PRIVATE);
+
+        //button to delete markers and polygons
+        deletePolygon.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                myEditor.clear();
+                myEditor.commit();
+                mMap.clear();
+            }
+        });
     }
 
     @Override
@@ -102,15 +106,6 @@ public class MapsActivity extends FragmentActivity implements
         //listen to click events on marker
         mMap.setOnMarkerClickListener(this);
 
-        //TODO: we are not using this one right?
-        //Answer: yepp, but maybe later - TODO: we'll delete it if we don't use it when we finished the app
-        //create new marker where the map is clicked
-//        mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
-//            @Override
-//            public void onMapClick(LatLng point) {
-//
-//            }
-//        });
 
         //on long click
         mMap.setOnMapLongClickListener(new GoogleMap.OnMapLongClickListener() {
@@ -132,7 +127,18 @@ public class MapsActivity extends FragmentActivity implements
             }
         });
         loadMarkers();
-        //loadPolygon();
+    }
+
+    //on click on the marker
+    @Override
+    public boolean onMarkerClick(Marker marker) {
+        marker.showInfoWindow();
+        return true;
+    }
+
+    @Override
+    public void onInfoWindowClick(Marker marker) {
+        marker.hideInfoWindow();
     }
 
     private String arrayToString() {
@@ -157,7 +163,6 @@ public class MapsActivity extends FragmentActivity implements
         Integer polygonStringId = polygonString.hashCode();
         myEditor.putString(polygonStringId.toString(), polygonString);
         myEditor.apply();
-        Toast.makeText(this, "YAY - savePolygon", Toast.LENGTH_SHORT).show();
     }
 
 
@@ -173,13 +178,6 @@ public class MapsActivity extends FragmentActivity implements
 
     }
 
-
-/**
-    private void loadPolygon() {
-        //call the saved polygon data
-        Map<String, ?> polyMarker = sharedPref.getAll();
-    }
- */
 
     private void loadMarkers() {
         Map<String, ?> allMarker = sharedPref.getAll();
@@ -201,7 +199,6 @@ public class MapsActivity extends FragmentActivity implements
                     Double pLat = Double.parseDouble(foobar[i+1]);
                     Double pLng = Double.parseDouble(foobar[i+2]);
 
-                    Log.d(TAG, "loadMarkers latitude: " + pLat.toString());
                     //recreate marker
                     Marker newMarker = mMap.addMarker(new MarkerOptions()
                             .position(new LatLng(pLat, pLng))
@@ -260,7 +257,6 @@ public class MapsActivity extends FragmentActivity implements
         return areaWithUnit;
     }
     public void calcCentroid(ArrayList<Marker> markerArray) {
-        Integer foobarbar = markerArray.size();
         LatLng centroid;
         double centroidLat = 0;
         double centroidLng = 0;
@@ -269,9 +265,7 @@ public class MapsActivity extends FragmentActivity implements
                 centroidLat += markerArray.get(i).getPosition().latitude;
                 centroidLng += markerArray.get(i).getPosition().longitude;
             }
-            Toast.makeText(this, "wurst" + foobarbar.toString(), Toast.LENGTH_SHORT).show();
 
-            //TODO: test this approach
             // https://sciencing.com/convert-xy-coordinates-longitude-latitude-8449009.html
             centroidLat = centroidLat / markerArray.size();
             centroidLng = centroidLng / markerArray.size();
@@ -283,24 +277,6 @@ public class MapsActivity extends FragmentActivity implements
         }
     }
 
-    public static void saveObjectToSharedPreferences() {
-        //here the code that sets up the sharedPreferences File
-
-        //adding a string to the sharedPreferences
-        //apply changes to sharedPreferences
-    }
-
-    public static void getSavedObjectFromPreferences() {
-        //retrieve the data from the sharedPreferences File
-    }
-
-
-    //on click on the marker
-    @Override
-    public boolean onMarkerClick(Marker marker) {
-        marker.showInfoWindow();
-        return true;
-    }
 
     public void checkPermission(Activity thisActivity) {
         // followed this guide https://developer.android.com/training/permissions/requesting.html
@@ -342,8 +318,4 @@ public class MapsActivity extends FragmentActivity implements
         }
     }
 
-    @Override
-    public void onInfoWindowClick(Marker marker) {
-        marker.hideInfoWindow();
-    }
 }
