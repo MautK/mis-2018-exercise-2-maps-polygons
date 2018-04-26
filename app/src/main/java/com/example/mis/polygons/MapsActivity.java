@@ -62,11 +62,6 @@ public class MapsActivity extends FragmentActivity implements
         final Button createPolygon = findViewById(R.id.buttonPolygon);
         final Button deletePolygon = findViewById(R.id.buttonDelete);
 
-        // Obtain the SupportMapFragment and get notified when the map is ready to be used.
-        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
-                .findFragmentById(R.id.map);
-        mapFragment.getMapAsync(this);
-
         deletePolygon.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -100,7 +95,6 @@ public class MapsActivity extends FragmentActivity implements
         sharedPref = this.getPreferences(Context.MODE_PRIVATE);
         myEditor = sharedPref.edit();
         mMap = googleMap;
-        mMap.setMyLocationEnabled(true);
 
         //listen to click events on infoWindow
         mMap.setOnInfoWindowClickListener(this);
@@ -144,12 +138,10 @@ public class MapsActivity extends FragmentActivity implements
         //loadPolygon();
     }
 
-
 /**
     private void savePolygon(LatLng p, String title) {
     }
 */
-
 
     private void saveMarker(LatLng p, String title) {
         Double aLat = p.latitude;
@@ -313,8 +305,13 @@ public class MapsActivity extends FragmentActivity implements
                         MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION
                 );
             }
+        } else {
+            // Obtain the SupportMapFragment and get notified when the map is ready to be used.
+            mMap.setMyLocationEnabled(true);
+            SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
+                    .findFragmentById(R.id.map);
+            mapFragment.getMapAsync(this);
         }
-
     }
 
     // followed this guide https://developer.android.com/training/permissions/requesting.html
@@ -331,7 +328,6 @@ public class MapsActivity extends FragmentActivity implements
                     // contacts-related task you need to do.
 
                 } else {
-
                     // permission denied, boo! Disable the
                     // functionality that depends on this permission.
                 }
