@@ -38,6 +38,7 @@ public class MapsActivity extends FragmentActivity implements
         OnMapReadyCallback,
         GoogleMap.OnInfoWindowClickListener,
         GoogleMap.OnMarkerClickListener {
+    private static final String TAG = "onCreate";
     private GoogleMap mMap;
     private ArrayList<Marker> activePolygonMarker;
     private final int MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 42;
@@ -71,6 +72,7 @@ public class MapsActivity extends FragmentActivity implements
             public void onClick(View v) {
                 myEditor.clear();
                 myEditor.commit();
+                mMap.clear();
             }
         });
 
@@ -126,7 +128,6 @@ public class MapsActivity extends FragmentActivity implements
 
 
                 saveMarker(point, newString);
-                savePolygon();
 
                 Marker newMarker = mMap.addMarker(new MarkerOptions()
                         .position(point)
@@ -134,22 +135,21 @@ public class MapsActivity extends FragmentActivity implements
 
                 if (polygonSwitch) {
                     activePolygonMarker.add(newMarker);
+                    //savePolygon(point, newString);
+                    saveMarker(point, newString);
                 }
             }
         });
         loadMarkers();
-        loadPolygon();
+        //loadPolygon();
     }
 
-    private void savePolygon() {
-        String polyString = "";
-        if (activePolygonMarker.size() > 0) {
-            Log.d(TAG, "savePolygon: " + activePolygonMarker);
-            Marker polyString = activePolygonMarker.get(0);
 
-            //for-loop over all the active polygonmarkers
-        }
+/**
+    private void savePolygon(LatLng p, String title) {
     }
+*/
+
 
     private void saveMarker(LatLng p, String title) {
         Double aLat = p.latitude;
@@ -158,22 +158,35 @@ public class MapsActivity extends FragmentActivity implements
         Integer markerId = titleLatLng.hashCode();
 
         myEditor.putString(markerId.toString(), titleLatLng);
-        myEditor.commit();
+        // myEditor.commit();
+
+        if (activePolygonMarker.size() > 0) {
+            Marker polyString = activePolygonMarker.get(0);
+
+            //for-loop over all the active polygonmarkers
+            for (int i = 0; i < activePolygonMarker.size() ; i++) {
+
+                Double pLat = p.latitude;
+                Double pLng = p.longitude;
+
+                String polygonLatLng = title + ", " + pLat.toString() + ", " + pLng.toString();
+                Integer polymarkerId = polygonLatLng.hashCode();
+
+                Log.d(TAG, "savePolygon: " + polygonLatLng);
+
+                myEditor.putString(polymarkerId.toString(), polygonLatLng);
+                myEditor.commit();
+            }
+        }
     }
 
 
-
+/**
     private void loadPolygon() {
         //call the saved polygon data
-        //change it back from string into Double numbers
-        //recreate marker
-
-        //getAll
-        //for loop
-        //if statement with number of splits
-
-
+        Map<String, ?> polyMarker = sharedPref.getAll();
     }
+ */
 
     private void loadMarkers() {
         Map<String, ?> allMarker = sharedPref.getAll();
@@ -187,6 +200,20 @@ public class MapsActivity extends FragmentActivity implements
                     .position(new LatLng(lat, lng))
                     .title(title)
             );
+        }
+
+        Map<String, ?> polyMarker = sharedPref.getAll();
+        for (Map.Entry<String, ?> entry : polyMarker.entrySet()) {
+            //change it back from double into integrer
+            String[] foobar = entry.getValue().toString().split(", ");
+            Double pLat = Double.parseDouble(foobar[0]);
+            Double pLng = Double.parseDouble(foobar[1]);
+
+            //recreate marker
+            Marker newMarker = mMap.addMarker(new MarkerOptions()
+                    .position(new LatLng(pLat, pLng)));
+
+            activePolygonMarker.add(newMarker);
         }
     }
 
