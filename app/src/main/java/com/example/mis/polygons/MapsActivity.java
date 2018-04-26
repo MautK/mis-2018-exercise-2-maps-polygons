@@ -16,8 +16,6 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-//import com.google.android.gms.maps.CameraUpdateFactory;
-import com.google.android.gms.common.server.converter.StringToIntConverter;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
@@ -26,7 +24,6 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polygon;
 import com.google.android.gms.maps.model.PolygonOptions;
-import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.maps.android.SphericalUtil;
 
 import java.math.RoundingMode;
@@ -51,7 +48,6 @@ public class MapsActivity extends FragmentActivity implements
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
 
-
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
@@ -62,7 +58,7 @@ public class MapsActivity extends FragmentActivity implements
         final Button createPolygon = findViewById(R.id.buttonPolygon);
         final Button deletePolygon = findViewById(R.id.buttonDelete);
 
-        //create&end polygon button
+        //start-end polygon button
         createPolygon.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -151,7 +147,8 @@ public class MapsActivity extends FragmentActivity implements
                 if (polyString == "") {
                     polyString = aTitle + ", " + aLat.toString() + ", " + aLng.toString();
                 } else {
-                    polyString = polyString + ", " + aTitle + ", " + aLat.toString() + ", " + aLng.toString();
+                    polyString = polyString + ", " + aTitle + ", "
+                            + aLat.toString() + ", " + aLng.toString();
                 }
             }
         }
@@ -182,11 +179,11 @@ public class MapsActivity extends FragmentActivity implements
     private void loadMarkers() {
         Map<String, ?> allMarker = sharedPref.getAll();
         for (Map.Entry<String, ?> entry : allMarker.entrySet()) {
-            String[] foobar = entry.getValue().toString().split(", ");
-            if (foobar.length == 2 || foobar.length == 3) {
-                String title = foobar[0];
-                Double lat = Double.parseDouble(foobar[1]);
-                Double lng = Double.parseDouble(foobar[2]);
+            String[] titleLatLngString = entry.getValue().toString().split(", ");
+            if (titleLatLngString.length == 2 || titleLatLngString.length == 3) {
+                String title = titleLatLngString[0];
+                Double lat = Double.parseDouble(titleLatLngString[1]);
+                Double lng = Double.parseDouble(titleLatLngString[2]);
 
                 mMap.addMarker(new MarkerOptions()
                         .position(new LatLng(lat, lng))
@@ -194,10 +191,10 @@ public class MapsActivity extends FragmentActivity implements
                 );
             } else {
                 ArrayList<Marker> markerArray = new ArrayList<>();
-                for (int i = 0; i < foobar.length; i = i+3) {
-                    String title = foobar[i+0];
-                    Double pLat = Double.parseDouble(foobar[i+1]);
-                    Double pLng = Double.parseDouble(foobar[i+2]);
+                for (int i = 0; i < titleLatLngString.length; i = i+3) {
+                    String title = titleLatLngString[i+0];
+                    Double pLat = Double.parseDouble(titleLatLngString[i+1]);
+                    Double pLng = Double.parseDouble(titleLatLngString[i+2]);
 
                     //recreate marker
                     Marker newMarker = mMap.addMarker(new MarkerOptions()
@@ -207,7 +204,6 @@ public class MapsActivity extends FragmentActivity implements
                     markerArray.add(newMarker);
                 }
                 calcCentroid(markerArray);
-                Toast.makeText(this, "YAY YAY?", Toast.LENGTH_SHORT).show();
             }
         }
     }
@@ -229,7 +225,6 @@ public class MapsActivity extends FragmentActivity implements
         if (markerArray.size() >= 3) {
             for (int i = 0; i < markerArray.size(); i++) {
                 newPolygonOptions.add(markerArray.get(i).getPosition());
-//                Toast.makeText(this, "ALMOST", Toast.LENGTH_SHORT).show();
             }
             newPolygon = mMap.addPolygon(newPolygonOptions);
             area = SphericalUtil.computeArea(newPolygon.getPoints());
@@ -281,8 +276,8 @@ public class MapsActivity extends FragmentActivity implements
     public void checkPermission(Activity thisActivity) {
         // followed this guide https://developer.android.com/training/permissions/requesting.html
         //permission added to manifest
-        if (ContextCompat.checkSelfPermission(thisActivity, Manifest.permission.ACCESS_FINE_LOCATION)
-                != PackageManager.PERMISSION_GRANTED) {
+        if (ContextCompat.checkSelfPermission(thisActivity, 
+                Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                 ActivityCompat.requestPermissions(thisActivity,
                         new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
                         MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION
