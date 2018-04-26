@@ -46,21 +46,18 @@ public class MapsActivity extends FragmentActivity implements
     private SharedPreferences.Editor myEditor = null;
     private SharedPreferences sharedPref;
 
-    // added for future use - if another activity needs to know this value
-    public int getMY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION() {
-        return MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION;
-    }
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        final Activity thisActivity = this;
-        checkPermission(thisActivity);
-
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
 
         final Button createPolygon = findViewById(R.id.buttonPolygon);
         final Button deletePolygon = findViewById(R.id.buttonDelete);
+
+        // Obtain the SupportMapFragment and get notified when the map is ready to be used.
+        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
+                .findFragmentById(R.id.map);
+        mapFragment.getMapAsync(this);
 
         deletePolygon.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -90,11 +87,11 @@ public class MapsActivity extends FragmentActivity implements
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
+        mMap = googleMap;
         final Activity thisActivity = this;
         checkPermission(thisActivity);
         sharedPref = this.getPreferences(Context.MODE_PRIVATE);
         myEditor = sharedPref.edit();
-        mMap = googleMap;
 
         //listen to click events on infoWindow
         mMap.setOnInfoWindowClickListener(this);
@@ -105,12 +102,12 @@ public class MapsActivity extends FragmentActivity implements
         //TODO: we are not using this one right?
         //Answer: yepp, but maybe later - TODO: we'll delete it if we don't use it when we finished the app
         //create new marker where the map is clicked
-        mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
-            @Override
-            public void onMapClick(LatLng point) {
-
-            }
-        });
+//        mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
+//            @Override
+//            public void onMapClick(LatLng point) {
+//
+//            }
+//        });
 
         //on long click
         mMap.setOnMapLongClickListener(new GoogleMap.OnMapLongClickListener() {
@@ -295,22 +292,13 @@ public class MapsActivity extends FragmentActivity implements
         //permission added to manifest
         if (ContextCompat.checkSelfPermission(thisActivity, Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
-            // Permission is not granted
-            if (ActivityCompat.shouldShowRequestPermissionRationale(thisActivity,
-                    Manifest.permission.ACCESS_FINE_LOCATION)) {
-            } else {
-                // No explanation needed; request the permission
                 ActivityCompat.requestPermissions(thisActivity,
                         new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
                         MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION
                 );
-            }
+//            }
         } else {
-            // Obtain the SupportMapFragment and get notified when the map is ready to be used.
             mMap.setMyLocationEnabled(true);
-            SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
-                    .findFragmentById(R.id.map);
-            mapFragment.getMapAsync(this);
         }
     }
 
